@@ -1,0 +1,142 @@
+'subrouting to loop through each workbook, and each ticker within each workbook
+Sub tickers()
+
+'to loop through each worksheet in workbook
+
+Dim ws As Worksheet
+
+For Each ws In Sheets
+MsgBox ws.Name
+
+    
+  'first row of summary table
+  summary_table_row = 2
+  'last row of worksheet
+  LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+  'volume field
+  volume = 0
+  'this counter allows you to always reference the first value in a given ticker (start of year open)
+  counter = 0
+  
+  'field names in worksheet
+  ws.Cells(summary_table_row - 1, 9) = "Ticker"
+  ws.Cells(summary_table_row - 1, 10) = "Yearly Change"
+  ws.Cells(summary_table_row - 1, 11) = "Percent Change"
+  ws.Cells(summary_table_row - 1, 12) = "Total Stock Volume"
+  ws.Cells(2, 15) = "Greatest % Increase"
+  ws.Cells(3, 15) = "Greatest % Decrease"
+  ws.Cells(4, 15) = "Greatest Total Volume"
+
+  
+  'field names for second summary table
+  ws.Cells(summary_table_row - 1, 16) = "Ticker"
+  ws.Cells(summary_table_row - 1, 17) = "Value"
+  
+  'loop through each ticker to see when new ticker begins, capture values needed
+  For Row = 2 To LastRow
+    
+    
+    If ws.Cells(Row, 1).Value <> ws.Cells(Row + 1, 1).Value Then
+    
+       'define ticker
+         ticker = ws.Cells(Row, 1).Value
+       'find last day
+         last_date = ws.Cells(Row, 2).Value
+       'find close value
+         last_close = ws.Cells(Row, 6).Value
+       'increment volume
+         volume = volume + ws.Cells(Row, 7).Value
+       'print ticker to summary table
+         ws.Range("I" & summary_table_row).Value = ticker
+       'print volume to summary
+         ws.Range("L" & summary_table_row).Value = volume
+       'calculate yearly change (last value and first value)'
+       'first value, using ticker specific counter to refer back to first value
+         first_open = ws.Cells(Row - counter, 3).Value
+       'last value
+         last_close = ws.Cells(Row, 6).Value
+       'print to summary table
+         ws.Range("J" & summary_table_row).Value = last_close - first_open
+       'calculate percent change
+         ws.Range("K" & summary_table_row).Value = (last_close - first_open) / first_open
+        'reset ticker specific volume
+         volume = 0
+        'reset ticker specific counter
+         counter = 0
+        'increment summary row
+         summary_table_row = summary_table_row + 1
+        
+    Else:
+        'increment volume
+         volume = volume + Cells(Row, 7).Value
+        'increment counter
+         counter = counter + 1
+        
+           
+    End If
+    
+    'format summary table
+    
+    
+    If ws.Cells(summary_table_row - 1, 10).Value < 0 Then
+    ws.Cells(summary_table_row - 1, 10).Interior.ColorIndex = 3
+    Else: ws.Cells(summary_table_row - 1, 10).Interior.ColorIndex = 4
+    End If
+    
+
+  Next Row
+  
+  
+ 'find the volume and changes for maxes within summary table
+  max_change = Cells(2, 11).Value
+  max_decrease = Cells(2, 11).Value
+  greatest_volume = Cells(2, 12).Value
+  max_change_ticker = Cells(2, 9).Value
+  max_decrease_ticker = Cells(2, 9).Value
+  greatest_volume_ticker = Cells(2, 9).Value
+    
+  For sumrow = 2 To summary_table_row - 1
+   
+        If ws.Cells(sumrow + 1, 11).Value > max_change Then
+        max_change = ws.Cells(sumrow + 1, 11).Value
+        max_change_ticker = ws.Cells(sumrow + 1, 9).Value
+        End If
+        
+  Next sumrow
+          
+  For sumrow = 2 To summary_table_row - 1
+   
+        If ws.Cells(sumrow + 1, 11).Value < max_decrease Then
+        max_decrease = ws.Cells(sumrow + 1, 11).Value
+        max_decrease_ticker = ws.Cells(sumrow + 1, 9).Value
+        End If
+        
+  Next sumrow
+  
+  For sumrow = 2 To summary_table_row - 1
+   
+        If ws.Cells(sumrow + 1, 12).Value > greatest_volume Then
+        greatest_volume = ws.Cells(sumrow + 1, 12).Value
+        greatest_volume_ticker = ws.Cells(sumrow + 1, 9).Value
+        End If
+        
+  Next sumrow
+  
+  'print values to second summary table
+  ws.Cells(2, 16).Value = max_change_ticker
+  ws.Cells(2, 17).Value = max_change
+  ws.Cells(3, 16).Value = max_decrease_ticker
+  ws.Cells(3, 17).Value = max_decrease
+  ws.Cells(4, 16).Value = greatest_volume_ticker
+  ws.Cells(4, 17).Value = greatest_volume
+     
+  'formatting
+  ws.Cells(1, 10).Interior.ColorIndex = 0
+  ws.Range("K2:K" & summary_table_row).NumberFormat = "0.00%"
+  ws.Cells(2, 17).NumberFormat = "0.00%"
+  ws.Cells(3, 17).NumberFormat = "0.00%"
+    
+Next ws
+
+
+End Sub
