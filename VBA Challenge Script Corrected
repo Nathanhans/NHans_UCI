@@ -1,5 +1,6 @@
 ' Hey Mark!  I found the issue.  I had the volume reset in the wrong place in the code, which caused it to continually increment the volume instead of reset.  Here is the fix!
-
+' UPDATE 2: I had missed the last value for each ticker!  Added the following
+'           ws.Range("L" & summary_table_row).Value = volume + ws.Cells(Row, 7).Value
 
 'subrouting to loop through each workbook, and each ticker within each workbook
 Sub tickers()
@@ -70,7 +71,7 @@ MsgBox ws.Name
          counter = 0
          
          'print volume to summary
-         ws.Range("L" & summary_table_row).Value = volume
+         ws.Range("L" & summary_table_row).Value = volume + ws.Cells(Row, 7).Value
          
          'reset ticker specific volume
          volume = 0
@@ -155,6 +156,7 @@ Next ws
 
 
 End Sub
+
 
 
 
